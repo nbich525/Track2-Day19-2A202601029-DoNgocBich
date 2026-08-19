@@ -21,11 +21,13 @@ from __future__ import annotations
 
 import os
 from dataclasses import dataclass
+from pathlib import Path
 from typing import Iterable, Iterator
 
 import numpy as np
 
 DEFAULT_BACKEND = "fastembed"
+ROOT = Path(__file__).resolve().parent.parent
 
 
 @dataclass(frozen=True)
@@ -61,6 +63,7 @@ class Embedder:
         self.backend = name
         self.spec = BACKENDS[name]
         self._impl = None
+        os.environ.setdefault("HF_HUB_DISABLE_SYMLINKS_WARNING", "1")
 
     # dimension is a property of the chosen model, never a hard-coded constant
     @property
@@ -77,7 +80,9 @@ class Embedder:
         p = self.spec.provider
         if p == "fastembed":
             from fastembed import TextEmbedding
-            self._impl = TextEmbedding(model_name=self.spec.model)
+            cache_dir = os.getenv("FASTEMBED_CACHE_DIR", str(ROOT / ".cache" / "fastembed"))
+            Path(cache_dir).mkdir(parents=True, exist_ok=True)
+            self._impl = TextEmbedding(model_name=self.spec.model, cache_dir=cache_dir)
         elif p == "sentence-transformers":
             try:
                 from sentence_transformers import SentenceTransformer

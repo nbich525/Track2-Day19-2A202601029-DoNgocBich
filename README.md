@@ -79,6 +79,27 @@ make benchmark
 Yêu cầu: RAM ≥ 8 GB free, port 6333/6379/5432 không xung đột.
 Endpoints: Qdrant http://localhost:6333 · Redis :6379 · Postgres :5432
 
+### Windows + Docker Desktop (không cần Make hoặc terminal VS Code)
+
+Mở **PowerShell** từ Start Menu, rồi chạy các lệnh sau tại thư mục repo. Có
+hướng dẫn đầy đủ, gồm xử lý port và dừng/xóa volume, trong
+[`WINDOWS-DOCKER.md`](WINDOWS-DOCKER.md).
+
+```powershell
+Set-Location "D:\Vin\Track2-Day19-2A202601029-DoNgocBich"
+docker compose up -d
+py -3.13 -m venv .venv
+.\.venv\Scripts\python.exe -m pip install -r requirements.txt -r requirements-full.txt
+.\.venv\Scripts\python.exe scripts\seed_corpus.py
+.\.venv\Scripts\python.exe scripts\gen_agent_queries.py
+.\.venv\Scripts\python.exe scripts\gen_spend.py
+.\.venv\Scripts\python.exe scripts\verify_docker.py
+```
+
+Để chạy API, mở PowerShell thứ hai và dùng
+`.\.venv\Scripts\python.exe -m uvicorn app.main:app --port 8000`; mở notebook
+bằng `.\.venv\Scripts\jupyter.exe lab --notebook-dir=notebooks`.
+
 ### Ba runtime, không phải chỉ Docker
 
 ```bash

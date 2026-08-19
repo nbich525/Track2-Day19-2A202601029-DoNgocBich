@@ -12,6 +12,7 @@ import traceback
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parent.parent
+sys.path.insert(0, str(ROOT))
 
 
 def step(label: str) -> None:
@@ -23,10 +24,11 @@ def main() -> int:
     try:
         # ── 1. fastembed ────────────────────────────────────────────────
         step("fastembed loads + embeds (BAAI/bge-small-en-v1.5)")
-        from fastembed import TextEmbedding
-        emb_model = TextEmbedding(model_name="BAAI/bge-small-en-v1.5")
+        from app.embeddings import Embedder
+        emb_model = Embedder()
         sample = list(emb_model.embed(["cloud computing tiếng Việt"]))
-        assert len(sample) == 1 and len(sample[0]) == 384, f"unexpected vector shape: {len(sample[0])}"
+        assert len(sample) == 1 and len(sample[0]) == emb_model.dim, \
+            f"unexpected vector shape: {len(sample[0])}"
 
         # ── 2. Qdrant in-memory ─────────────────────────────────────────
         step("Qdrant in-memory: index + search")
@@ -71,7 +73,6 @@ def main() -> int:
 
         # ── 6. FastAPI app imports ──────────────────────────────────────
         step("FastAPI app imports without error")
-        sys.path.insert(0, str(ROOT))
         from app import main as app_main
         assert hasattr(app_main, "app"), "app.main.app missing"
 
